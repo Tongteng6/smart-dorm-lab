@@ -176,6 +176,7 @@ local.properties
 /.clang-format
 /.clang-tidy
 /.test
+**/.test/
 
 # 签名与密钥（敏感，禁止提交）
 *.p12
