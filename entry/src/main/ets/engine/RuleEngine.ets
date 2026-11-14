@@ -139,7 +139,11 @@ function buildReject(item: PendingAction, winner: PendingAction, reason: string)
 
 /** 计算并生成一条日志，供 ViewModel 直接落盘 */
 export function evaluateAndBuildLog(env: EnvState, rules: Rule[], devices: Device[]): LogEntry {
-  const result: EvaluationResult = evaluate(env, rules, devices);
+  return buildLog(env, evaluate(env, rules, devices));
+}
+
+/** 用已有计算结果组装日志（避免重复计算） */
+export function buildLog(env: EnvState, result: EvaluationResult): LogEntry {
   return {
     id: newLogId(),
     ts: Date.now(),
