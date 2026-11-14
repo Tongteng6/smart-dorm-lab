@@ -147,3 +147,47 @@ vite.config.ts.timestamp-*
 
 # Turbo Repo
 .turbo
+
+# ---------------------------------------------------------------------------
+# HarmonyOS / DevEco Studio / ArkTS  (smart-dorm-lab)
+# ---------------------------------------------------------------------------
+# 构建产物与中间文件
+/build
+**/build/
+/.hvigor
+**/.hvigor/
+/.preview
+**/.preview/
+/.cxx
+**/.cxx/
+oh_modules/
+**/oh_modules/
+*.har
+*.hap
+*.hsp
+
+# DevEco Studio / IDE
+/.idea/
+*.iml
+*.hprof
+local.properties
+/.appanalyzer
+/.clangd
+/.clang-format
+/.clang-tidy
+/.test
+
+# 签名与密钥（敏感，禁止提交）
+*.p12
+*.cer
+*.p7b
+*.csr
+*.jks
+signature/
+/key/
+/keys/
+
+# 系统垃圾文件
+.DS_Store
+Thumbs.db
+desktop.ini
