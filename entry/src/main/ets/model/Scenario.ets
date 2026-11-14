@@ -22,7 +22,7 @@ export function defaultScenarios(): Scenario[] {
       id: 'sc-day',
       name: '白天有人',
       icon: '☀',
-      env: { temperature: 29, illuminance: 800, humidity: 45, presence: true }
+      env: { temperature: 29, illuminance: 900, humidity: 45, presence: true }
     },
     {
       id: 'sc-night',

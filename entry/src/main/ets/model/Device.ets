@@ -125,6 +125,22 @@ export function isValidPropertyValue(prop: DeviceProperty, value: number | boole
   return value >= range[0] && value <= range[1];
 }
 
+/** 该设备全部可写属性 */
+export function deviceProperties(type: DeviceType): DeviceProperty[] {
+  switch (type) {
+    case DeviceType.LIGHT:
+      return ['power', 'brightness'];
+    case DeviceType.AC:
+      return ['power', 'targetTemp'];
+    case DeviceType.CURTAIN:
+      return ['openness'];
+    case DeviceType.FAN:
+      return ['power', 'speed'];
+    default:
+      return [];
+  }
+}
+
 /** 该设备是否拥有某属性 */
 export function deviceHasProperty(type: DeviceType, prop: DeviceProperty): boolean {
   switch (type) {
@@ -211,4 +227,33 @@ export function cloneDevice(device: Device): Device {
 
 export function cloneDevices(devices: Device[]): Device[] {
   return devices.map((d: Device) => cloneDevice(d));
+}
+
+/** 设备基线状态：没有任何规则命中时设备应处的状态（全关） */
+export function baselineState(type: DeviceType): DeviceState {
+  switch (type) {
+    case DeviceType.LIGHT:
+      return { power: false, brightness: 60 };
+    case DeviceType.AC:
+      return { power: false, targetTemp: 26 };
+    case DeviceType.CURTAIN:
+      return { openness: 0 };
+    case DeviceType.FAN:
+      return { power: false, speed: 1 };
+    default:
+      return {};
+  }
+}
+
+/**
+ * 基于基线状态重建整组设备。
+ * 引擎每轮都从这里出发，再叠加命中规则的动作，
+ * 因此「设备状态」是「当前环境 + 规则」的确定性函数：
+ * 条件不再成立时，设备会自动回到基线，不会卡在上一次的开状态。
+ */
+export function baselineDevices(devices: Device[]): Device[] {
+  return devices.map((d: Device) => {
+    const rebuilt: Device = { id: d.id, type: d.type, name: d.name, state: baselineState(d.type) };
+    return rebuilt;
+  });
 }

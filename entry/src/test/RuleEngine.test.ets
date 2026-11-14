@@ -36,6 +36,24 @@ function acPower(devices: Device[]): boolean {
   return readProperty(ac, 'power') as boolean;
 }
 
+/** 顶灯开关 */
+function lightPower(devices: Device[]): boolean {
+  const light: Device = devices.find((d: Device) => d.id === 'light') as Device;
+  return readProperty(light, 'power') as boolean;
+}
+
+/** 窗帘开合度 */
+function curtainOpenness(devices: Device[]): number {
+  const curtain: Device = devices.find((d: Device) => d.id === 'curtain') as Device;
+  return readProperty(curtain, 'openness') as number;
+}
+
+/** 风扇开关 */
+function fanPower(devices: Device[]): boolean {
+  const fan: Device = devices.find((d: Device) => d.id === 'fan') as Device;
+  return readProperty(fan, 'power') as boolean;
+}
+
 export default function ruleEngineTest() {
   describe('RuleEngine', () => {
 
@@ -191,9 +209,35 @@ export default function ruleEngineTest() {
       const onResult = evaluate(env(30, 500, 50, true), rules, defaultDevices());
       expect(acPower(onResult.nextDevices)).assertTrue();
 
-      // 第二步：人离开（温度仍是 30℃）→ R6 命中，空调应被关闭
+      // 第二步：人离开（温度仍是 30℃）→ 无规则命中，空调回到基线（关闭）
       const offResult = evaluate(env(30, 500, 50, false), rules, onResult.nextDevices);
       expect(acPower(offResult.nextDevices)).assertFalse();
+    });
+
+    // T-13 回归：条件不再成立时设备必须回到基线（光照 150 开灯 → 拉到 900 必须关灯）
+    it('T13_device_back_to_baseline_when_condition_lost', 0, () => {
+      const rules: Rule[] = defaultRules();
+
+      // 暗环境、有人 → 开灯
+      const dark = evaluate(env(25, 150, 50, true), rules, defaultDevices());
+      expect(lightPower(dark.nextDevices)).assertTrue();
+      expect(curtainOpenness(dark.nextDevices)).assertEqual(0);
+
+      // 拉到明亮 → 关灯（自动复位），同时窗帘被 R5 拉开到 80%
+      const bright = evaluate(env(25, 900, 50, true), rules, dark.nextDevices);
+      expect(lightPower(bright.nextDevices)).assertFalse();
+      expect(curtainOpenness(bright.nextDevices)).assertEqual(80);
+    });
+
+    // T-14 回归：湿度回落时风扇必须自动停
+    it('T14_fan_auto_off_when_humidity_drops', 0, () => {
+      const rules: Rule[] = defaultRules();
+
+      const wet = evaluate(env(25, 500, 80, true), rules, defaultDevices());
+      expect(fanPower(wet.nextDevices)).assertTrue();
+
+      const dry = evaluate(env(25, 500, 50, true), rules, wet.nextDevices);
+      expect(fanPower(dry.nextDevices)).assertFalse();
     });
   });
 }
