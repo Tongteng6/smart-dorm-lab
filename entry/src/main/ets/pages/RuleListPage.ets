@@ -141,7 +141,7 @@ struct RuleListPage {
                 LongPressGesture().onAction(() => this.confirmDelete(rule))
               )
             }
-          }, (rule: Rule) => rule.id)
+          }, (rule: Rule) => `${rule.id}-${rule.enabled}-${rule.priority}-${rule.name}`)
         }
         .width('100%')
         .layoutWeight(1)

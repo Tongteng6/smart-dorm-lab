@@ -134,7 +134,31 @@ struct ScenarioPage {
           .padding(14)
           .borderRadius(14)
           .backgroundColor(Color.White)
-          .margin({ top: 4, bottom: 24 })
+          .margin({ top: 4, bottom: 10 })
+
+          Button('恢复出厂设置')
+            .width('100%')
+            .height(42)
+            .fontSize(13)
+            .backgroundColor('#FFF1F1')
+            .fontColor('#E5484D')
+            .margin({ bottom: 30 })
+            .onClick(() => {
+              AlertDialog.show({
+                title: '恢复出厂设置',
+                message: '将清空所有规则、日志与自定义场景，恢复内置示例数据。',
+                primaryButton: { value: '取消', action: () => { } },
+                secondaryButton: {
+                  value: '确定恢复',
+                  fontColor: '#E5484D',
+                  action: () => {
+                    DormStore.get().resetAll();
+                    this.scenarios = DormStore.get().scenarios.slice();
+                    this.tip = '已恢复出厂设置';
+                  }
+                }
+              });
+            })
         }
         .padding({ left: 14, right: 14 })
       }
