@@ -3,6 +3,7 @@ import { Device, readProperty, defaultDevices } from '../main/ets/model/Device';
 import { EnvState, clampEnv, defaultEnv } from '../main/ets/model/EnvState';
 import { Action, Condition, Rule, validateRule } from '../main/ets/model/Rule';
 import { evaluate, sortRules } from '../main/ets/engine/RuleEngine';
+import { defaultRules } from '../main/ets/model/Samples';
 
 /** 构造一条测试用规则 */
 function makeRule(id: string, priority: number, createdAt: number, conds: Condition[],
@@ -179,6 +180,20 @@ export default function ruleEngineTest() {
       expect(sorted[0].id).assertEqual('c');
       expect(sorted[1].id).assertEqual('b');
       expect(sorted[2].id).assertEqual('a');
+    });
+
+    // T-12 回归：出厂规则下「有人 30℃ 开空调」→「变成无人后空调应关闭」
+    // 规则引擎只执行命中动作、不会自动复位设备，因此必须存在显式的关机规则
+    it('T12_sample_rules_turn_off_ac_when_empty', 0, () => {
+      const rules: Rule[] = defaultRules();
+
+      // 第一步：有人在房间、温度 30℃ → R1 命中，空调开
+      const onResult = evaluate(env(30, 500, 50, true), rules, defaultDevices());
+      expect(acPower(onResult.nextDevices)).assertTrue();
+
+      // 第二步：人离开（温度仍是 30℃）→ R6 命中，空调应被关闭
+      const offResult = evaluate(env(30, 500, 50, false), rules, onResult.nextDevices);
+      expect(acPower(offResult.nextDevices)).assertFalse();
     });
   });
 }

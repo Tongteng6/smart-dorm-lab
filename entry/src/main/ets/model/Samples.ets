@@ -1,13 +1,25 @@
 /**
  * 出厂示例数据：首次启动时写入，同时也是「重置」的恢复目标。
- * 5 条规则中：
+ * 6 条规则中：
  *   - R1 由两个条件共同决定（温度 > 28 且有人）
  *   - R5 与 R1 争抢「空调开关」，构成一个真实的优先级冲突场景
+ *   - R6 与 R4 共同保证「无人」时设备全部关闭（规则引擎只执行命中动作，
+ *     不会自动复位设备，所以必须显式写出「关」的规则）
  */
 import { Rule } from './Rule';
 
 export function defaultRules(): Rule[] {
   return [
+    {
+      id: 'sample-r6',
+      name: '离寝关空调',
+      enabled: true,
+      priority: 9,
+      logic: 'AND',
+      conditions: [{ metric: 'presence', operator: '==', value: false }],
+      actions: [{ deviceId: 'ac', property: 'power', value: false }],
+      createdAt: 1730000006000
+    },
     {
       id: 'sample-r4',
       name: '人走关设备',
@@ -72,7 +84,10 @@ export function defaultRules(): Rule[] {
       enabled: true,
       priority: 4,
       logic: 'AND',
-      conditions: [{ metric: 'illuminance', operator: '>', value: 500 }],
+      conditions: [
+        { metric: 'illuminance', operator: '>', value: 500 },
+        { metric: 'presence', operator: '==', value: true }
+      ],
       actions: [{ deviceId: 'ac', property: 'power', value: false }],
       createdAt: 1730000005000
     }
